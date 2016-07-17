@@ -159,29 +159,22 @@ void process_slave_socket(int slave_socket)
     std::cout << "==================================" << std::endl; 
 #endif
 
-    char reply[1024];
+    char reply[2048];
+	char file_data[2048];
+	
     if (access(full_path.c_str(), F_OK) != -1)
     {
         // file exists, get its size
         int fd = open(full_path.c_str(), O_RDONLY);
         int sz = lseek(fd, 0, SEEK_END);
+		lseek(fd, 0, SEEK_SET);
+		read(fd, file_data, sz);
+		close(fd);
 
-        sprintf(reply, "HTTP/1.0 200 OK\r\n\r\n");
+        sprintf(reply, "HTTP/1.0 200 OK\r\n\r\n%s\r\n", file_data);
 
         ssize_t send_ret = send(slave_socket, reply, strlen(reply), MSG_NOSIGNAL);
 
-#   ifdef HTTP_DEBUG
-        std::cout << "do_work: send return " << send_ret << std::endl;
-#   endif
-
-        off_t offset = 0;
-        while (offset < sz)
-        {
-            // think not the best solution
-            offset = sendfile(slave_socket, fd, &offset, sz - offset);
-        }
-
-        close(fd);
     }
     else
     {
