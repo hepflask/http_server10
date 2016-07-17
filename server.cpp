@@ -164,13 +164,9 @@ void process_slave_socket(int slave_socket)
     {
         // file exists, get its size
         int fd = open(full_path.c_str(), O_RDONLY);
-        int sz = lseek(fd, 0, SEEK_END);;
+        int sz = lseek(fd, 0, SEEK_END);
 
-        sprintf(reply, "HTTP/1.1 200 OK\r\n"
-                       "Content-Type: text/html\r\n"
-                       "Content-length: %d\r\n"
-                       "Connection: close\r\n"
-                       "\r\n", sz);
+        sprintf(reply, "HTTP/1.0 200 OK\r\n\r\n");
 
         ssize_t send_ret = send(slave_socket, reply, strlen(reply), MSG_NOSIGNAL);
 
@@ -189,11 +185,7 @@ void process_slave_socket(int slave_socket)
     }
     else
     {
-        strcpy(reply, "HTTP/1.1 404 Not Found\r\n"
-                      "Content-Type: text/html\r\n"
-                      "Content-length: 107\r\n"
-                      "Connection: close\r\n"
-                      "\r\n");
+        strcpy(reply, "HTTP/1.0 404 Not Found\r\nContent-Length: 0\r\nContent-Type: text/html\r\n\r\n");
 
         ssize_t send_ret = send(slave_socket, reply, strlen(reply), MSG_NOSIGNAL);
 #   ifdef HTTP_DEBUG
